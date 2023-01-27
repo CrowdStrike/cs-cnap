@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: WAFv2 WebACL and Rules.
+Resources:
+  DevDaysWebACL:
+    Type: 'AWS::WAFv2::WebACL'
+    Properties:
+      Name: DevDaysWebACL
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: { }
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: DevDaysWebACLMetric
+      Rules:
+        - Name: AWSCoreRuleSet
+          Priority: 0
+          OverrideAction:
+            None: { }
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSCoreRuleSetMetric
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+        - Name: AWSIPList
+          Priority: 1
+          OverrideAction:
+            None: { }
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSIPListMetric
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesAmazonIpReputationList
+Outputs:
+  WebACLARN:
+    Description: The ARN for the webacl to be used with the ALB ingress annotation
+    Value: !GetAtt DevDaysWebACL.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-Wafv2Arn"
