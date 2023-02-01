@@ -41,7 +41,7 @@ env_up(){
    read -p "Enter your EC2 key-pair name [cs-key]: " KeyPairName
    KeyPairName=${KeyPairName:-cs-key}
 
-   aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION
+   aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
    
    cd cs-cnap/templates
    aws s3 cp . s3://${S3Bucket} --recursive 
