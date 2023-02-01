@@ -152,7 +152,7 @@ echo "export EXT_IP=$(curl -s ipinfo.io/ip)"
 echo 'echo -e "Welcome to the demo!\n\nUse the command \`start\` to begin."' >> /etc/profile
 yum install -y git
 cd /home/ec2-user
-git clone -b update-entrypoint https://github.com/CrowdStrike/cs-cnap.git
+git clone https://github.com/CrowdStrike/cs-cnap.git
 mv cs-cnap/start.sh /usr/local/bin/start
 chmod +x /usr/local/bin/start
 zip -r code cs-cnap/code/*
