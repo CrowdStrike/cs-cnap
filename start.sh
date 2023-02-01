@@ -3,11 +3,8 @@ RD="\033[0;31m"
 NC="\033[0;0m"
 LB="\033[1;34m"
 env_up(){
-   
-    #git clone https://github.com/CrowdStrike/devdays.git
-
    EnvHash=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
-   S3Bucket=cloudsec-stack-${EnvHash}
+   S3Bucket=cnap-${EnvHash}
    AWS_REGION='us-east-1'
    S3Prefix='templates'
    StackName=${S3Bucket}
@@ -40,18 +37,22 @@ env_up(){
 #   read -p "Enter your Falcon Docker API Token: " DOCKER_API_TOKEN
    read -p "Enter your Falcon Cloud [us-1]: " CS_CLOUD
    CS_CLOUD=${CS_CLOUD:-us-1}
-   echo -e "Enter an existing key-pair in us-east-1 for connecting to EC2 instances. Yo can create one at https://us-east-1.console.aws.amazon.com/ec2#KeyPairs:"
+   echo -e "Enter an existing key-pair in us-east-1 for connecting to EC2 instances. You can create one at https://us-east-1.console.aws.amazon.com/ec2#KeyPairs:"
    read -p "Enter your EC2 key-pair name [cs-key]: " KeyPairName
    KeyPairName=${KeyPairName:-cs-key}
 
    aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION
    
-   cd templates
+   cd cs-cnap/templates
    aws s3 cp . s3://${S3Bucket}/${S3Prefix} --recursive 
    echo -e "$LB\n"
    echo -e "Standing up environment...$NC"
 
-   aws cloudformation create-stack --stack-name $StackName --template-url https://${S3Bucket}.s3.amazonaws.com/${S3Prefix}/${TemplateName} --region $AWS_REGION --disable-rollback \
+   aws cloudformation create-stack \
+   --stack-name $StackName \
+   --template-url https://${S3Bucket}.s3.amazonaws.com/${S3Prefix}/${TemplateName} \
+   --region $AWS_REGION \
+   --disable-rollback \
    --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
    --parameters \
    ParameterKey=S3Bucket,ParameterValue=${S3Bucket} \
