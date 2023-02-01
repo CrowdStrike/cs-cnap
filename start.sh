@@ -44,19 +44,18 @@ env_up(){
    aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION
    
    cd cs-cnap/templates
-   aws s3 cp . s3://${S3Bucket}/${S3Prefix} --recursive 
+   aws s3 cp . s3://${S3Bucket} --recursive 
    echo -e "$LB\n"
    echo -e "Standing up environment...$NC"
 
    aws cloudformation create-stack \
    --stack-name $StackName \
-   --template-url https://${S3Bucket}.s3.amazonaws.com/${S3Prefix}/${TemplateName} \
+   --template-url https://${S3Bucket}.s3.amazonaws.com/${TemplateName} \
    --region $AWS_REGION \
    --disable-rollback \
    --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
    --parameters \
    ParameterKey=S3Bucket,ParameterValue=${S3Bucket} \
-   ParameterKey=S3Prefix,ParameterValue=${S3Prefix} \
    ParameterKey=KeyPairName,ParameterValue=${KeyPairName} \
    ParameterKey=FalconClientID,ParameterValue=$CLIENT_ID \
    ParameterKey=FalconClientSecret,ParameterValue=$CLIENT_SECRET \
