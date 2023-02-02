@@ -37,7 +37,7 @@ env_up(){
 #   read -p "Enter your Falcon Docker API Token: " DOCKER_API_TOKEN
    read -p "Enter your Falcon Cloud [us-1]: " CS_CLOUD
    CS_CLOUD=${CS_CLOUD:-us-1}
-   echo -e "Enter an existing key-pair in us-east-1 for connecting to EC2 instances. You can create one at https://us-east-1.console.aws.amazon.com/ec2#KeyPairs:"
+   echo -e "Enter an existing key-pair in us-east-1 for connecting to EC2 instances. You can create one at https://us-west-2.console.aws.amazon.com/ec2#KeyPairs:"
    read -p "Enter your EC2 key-pair name [cs-key]: " KeyPairName
    KeyPairName=${KeyPairName:-cs-key}
 
