@@ -65,7 +65,7 @@ Parameters:
     #    Default: ami-00f2e79091d9064be
     #    us-west-2: ami-03748e24fab766cfc
     #    BYOA: ami-00a13348091ba2a87
-    Default: ami-03748e24fab766cfc
+    Default: ami-07a53017d32cd4da0
 
 Conditions:
   PermissionsBoundary: !Not [ !Equals [ !Ref PermissionsBoundary, '' ] ]

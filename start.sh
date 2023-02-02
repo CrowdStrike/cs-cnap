@@ -5,7 +5,7 @@ LB="\033[1;34m"
 env_up(){
    EnvHash=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
    S3Bucket=cnap-${EnvHash}
-   AWS_REGION='us-east-1'
+   AWS_REGION='us-west-2'
    S3Prefix='templates'
    StackName=${S3Bucket}
    TemplateName='entry.yaml'
@@ -41,7 +41,7 @@ env_up(){
    read -p "Enter your EC2 key-pair name [cs-key]: " KeyPairName
    KeyPairName=${KeyPairName:-cs-key}
 
-   aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION
+   aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
    
    cd cs-cnap/templates
    aws s3 cp . s3://${S3Bucket} --recursive 

@@ -80,7 +80,7 @@ resource "aws_vpc" "global_vpc" {
 resource "aws_subnet" "sn_private" {
   vpc_id     = aws_vpc.global_vpc.id
   cidr_block = "172.17.0.0/24"
-  availability_zone = "us-east-1a"
+  availability_zone = "us-west-2a"
   tags = {
     Name = "Private Subnet"
   }
