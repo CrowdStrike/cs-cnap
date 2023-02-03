@@ -156,7 +156,7 @@ git clone -b fix-kali-stack https://github.com/CrowdStrike/cs-cnap.git
 mv cs-cnap/start.sh /usr/local/bin/start
 chmod +x /usr/local/bin/start
 cd cs-cnap/code/
-zip code *
+zip code -r *
 cp code.zip ../templates/
 EOF
 }
