@@ -90,20 +90,11 @@ Resources:
           exec 3>&1 4>&2
           trap 'exec 2>&4 1>&3' 0 1 2 3
           exec 1>/tmp/log.out 2>&1
-          while true
-          do
-          STATUS=$(curl -s -o /dev/null -w '%{http_code}' "https://raw.githubusercontent.com/jhseceng/ct-test/main/setup-kali.sh")
-          if [ "$STATUS" -eq "200" ]; then
-            curl --insecure "https://raw.githubusercontent.com/jhseceng/ct-test/main/setup-kali.sh" -H "User-Agent: Initialize Script" --output /tmp/setup-kali.sh;
-            chmod +x /tmp/setup-kali.sh
-            /tmp/setup-kali.sh
-            curl --insecure "https://raw.githubusercontent.com/jhseceng/ct-test/main/start-kali.sh" -H "User-Agent: Initialize Script" --output /home/kali/start-kali.sh;
-            chmod +x /home/kali/start-kali.sh
-            /tmp/setup-kali.sh
-            break
-          else
-            echo "Got $STATUS :( Not done yet..."
-          fi
+          aws s3 cp s3://${S3Bucket}/${S3Prefix}/setup-kali.sh /tmp/setup-kali.sh
+          chmod +x /tmp/setup-kali.sh
+          /tmp/setup-kali.sh
+          aws s3 cp s3://${S3Bucket}/${S3Prefix}/start-kali.sh /home/kali/start-kali.sh
+          chmod +x /home/kali/start-kali.sh
           sleep 10
           mkdir /tmp/ssm 
           cd /tmp/ssm 
