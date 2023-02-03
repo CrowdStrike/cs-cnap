@@ -13,6 +13,7 @@ function install_kubernetes_client_tools() {
     mkdir -p /root/bin
     ln -s /usr/local/bin/kubectl /root/bin/
     ln -s /usr/local/bin/kubectl /opt/aws/bin
+    cat > /etc/profile.d/kubectl.sh <<EOF
 #!/bin/bash
 source <(/usr/local/bin/kubectl completion bash)
 EOF
@@ -23,13 +24,6 @@ EOF
     mv ./linux-amd64/helm /usr/local/bin/helm
     ln -s /usr/local/bin/helm /opt/aws/bin
     rm -rf ./linux-amd64/
-# Install awscli v2
-    curl -O "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-    unzip -o awscli-exe-linux-x86_64.zip
-    sudo ./aws/install
-    rm awscli-exe-linux-x86_64.zip
-    mv /bin/aws /bin/aws.v1
-    ln -s /usr/local/aws-cli/v2/current/dist/aws /bin/aws
 }
 
 function setup_kubeconfig() {
@@ -55,7 +49,7 @@ users:
 - name: ${clusterArn}
   user:
     exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
+      apiVersion: client.authentication.k8s.io/v1alpha1
       command: aws
       args:
         - --region
@@ -64,6 +58,11 @@ users:
         - get-token
         - --cluster-name
         - ${K8S_CLUSTER_NAME}
+        # - "- --role-arn"
+        # - "arn:aws:iam::$accountId:role/my-role"
+      # env:
+        # - name: "AWS_PROFILE"
+        #   value: "aws-profile"
 EOF
     printf "\nKube Config:\n"
     cat /home/ec2-user/.kube/config
@@ -74,8 +73,25 @@ EOF
     /sbin/useradd -d /home/ssm-user -u 1001 -s /bin/bash -m --user-group ssm-user
     mkdir -p /home/ssm-user/.kube/
     cp /home/ec2-user/.kube/config /home/ssm-user/.kube/config
-    chown -R ssm-user:ssm-user /home/ssm-user/
-    chmod -R og-rwx /home/ssm-user/.kube
+    chown -R ssm-user:ssm-user /home/ssm-user/.kube/
+}
+
+function install_k8s(){
+    cat >/tmp/config_value.yaml <<EOF
+crowdstrikeConfig:
+  clientID: ${CS_CLIENT_ID}
+  clientSecret: ${CS_CLIENT_SECRET}
+  clusterName: ${K8S_CLUSTER_NAME}
+  env: ${CS_ENV}
+  cid: ${CS_CID_LOWER}
+  dockerAPIToken: ${DOCKER_API_TOKEN}
+EOF
+    printf "\n"
+    cat /tmp/config_value.yaml
+    printf "\nAdd Repo\n"
+    helm repo add kpagent-helm https://registry.crowdstrike.com/kpagent-helm && helm repo update
+    printf "\Install Agent\n"
+    helm upgrade --install -f /tmp/config_value.yaml --kubeconfig /home/ec2-user/.kube/config --create-namespace -n falcon-kubernetes-protection kpagent kpagent-helm/cs-k8s-protection-agent
 }
 
 setup_environment_variables

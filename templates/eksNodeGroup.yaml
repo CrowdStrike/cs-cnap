@@ -64,7 +64,7 @@ Resources:
           - ResourceType: instance
             Tags:
               - Key: Name
-                Value: k8s-jharris-daemonset-ng-fffe2ff7-Node
+                Value: cnap-k8s-node
               - Key: cstag-account
                 Value: dev
               - Key: cstag-business
@@ -72,17 +72,15 @@ Resources:
               - Key: cstag-product
                 Value: Host Platform
               - Key: alpha.eksctl.io/nodegroup-name
-                Value: ng-fffe2ff7
+                Value: cnap-k8s-nodes
               - Key: alpha.eksctl.io/nodegroup-type
                 Value: managed
-              - Key: cstag.owner
-                Value: Justin.Harris
               - Key: cstag-department
                 Value: Sales-310000
           - ResourceType: volume
             Tags:
               - Key: Name
-                Value: k8s-jharris-daemonset-ng-fffe2ff7-Node
+                Value: cnap-k8s-node
               - Key: cstag-account
                 Value: dev
               - Key: cstag-business
@@ -90,17 +88,15 @@ Resources:
               - Key: cstag-product
                 Value: Host Platform
               - Key: alpha.eksctl.io/nodegroup-name
-                Value: ng-fffe2ff7
+                Value: cnap-k8s-nodes
               - Key: alpha.eksctl.io/nodegroup-type
                 Value: managed
-              - Key: cstag.owner
-                Value: Justin.Harris
               - Key: cstag-department
                 Value: Sales-310000
           - ResourceType: network-interface
             Tags:
               - Key: Name
-                Value: k8s-jharris-daemonset-ng-fffe2ff7-Node
+                Value: cnap-k8s-node
               - Key: cstag-account
                 Value: dev
               - Key: cstag-business
@@ -108,11 +104,9 @@ Resources:
               - Key: cstag-product
                 Value: Host Platform
               - Key: alpha.eksctl.io/nodegroup-name
-                Value: ng-fffe2ff7
+                Value: cnap-k8s-nodes
               - Key: alpha.eksctl.io/nodegroup-type
                 Value: managed
-              - Key: cstag.owner
-                Value: Justin.Harris
               - Key: cstag-department
                 Value: Sales-310000
       LaunchTemplateName:
@@ -127,7 +121,7 @@ Resources:
         - m5.large
       Labels:
         alpha.eksctl.io/cluster-name: !Ref EksClusterName
-        alpha.eksctl.io/nodegroup-name: ng-fffe2ff7
+        alpha.eksctl.io/nodegroup-name: cnap-k8s-nodes
       LaunchTemplate:
         Id:
           Ref: LaunchTemplate
@@ -135,8 +129,7 @@ Resources:
         Fn::GetAtt:
           - NodeInstanceRole
           - Arn
-      ReleaseVersion: 1.21.12-20220523
-      NodegroupName: ng-fffe2ff7
+      NodegroupName: cnap-k8s-node
       ScalingConfig:
         DesiredSize: 2
         MaxSize: 2
@@ -145,13 +138,12 @@ Resources:
         - !Ref SubnetPrivate1
         - !Ref SubnetPrivate2
       Tags:
-        alpha.eksctl.io/nodegroup-name: ng-fffe2ff7
+        alpha.eksctl.io/nodegroup-name: cnap-k8s-node
         alpha.eksctl.io/nodegroup-type: managed
         cstag-account: dev
         cstag-business: Sales
         cstag-department: Sales-310000
         cstag-product: Host Platform
-        cstag.owner: Justin.Harris
 
   NodeInstanceRole:
     Type: AWS::IAM::Role

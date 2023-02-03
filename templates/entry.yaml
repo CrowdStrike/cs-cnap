@@ -6,22 +6,26 @@ Description: 'Entry Stack for the Dev.Days CNAP Workshop.  Creates an EKS cluste
 Parameters:
   # Falcon Keys
   FalconCID:
+    NoEcho: true
     Description: 'Customer CID for the Falcon Installation'
     Type: String
   CrowdStrikeCloud:
     Type: String
     AllowedValues: [ 'us-1','us-2','eu-1' ]
+    Default: 'us-1'
   FalconClientID:
+    NoEcho: true
     Description: 'Client ID for the Falcon API'
     Type: String
   FalconClientSecret:
+    NoEcho: true
     Description: 'Client Secret for the Falcon API'
     Type: String
 
   # Environment Vars
   EnvAlias:
     Type: String
-    Default: 'ryan-cnap'
+    Default: 'cnap'
   EnvHash:
     Type: String
     Default: ''
@@ -38,8 +42,8 @@ Parameters:
   # Shared K8S Attributes
   KubernetesVersion:
     Type: String
-    AllowedValues: [ "1.19", "1.20", "1.21", "1.22" ]
-    Default: "1.21"
+    AllowedValues: [ "1.21", "1.22", "1.23", "1.24" ]
+    Default: "1.23"
     Description: Kubernetes control plane version.
   # Optional
   RemoteAccessCIDR:
@@ -86,6 +90,7 @@ Resources:
         SubnetPublic2: !GetAtt VPCStack.Outputs.SubnetPublic2
         EKSCodeBuildServiceRoleArn: !GetAtt IAMStack.Outputs.EKSCodeBuildServiceRoleArn
         EKSQSExtentionRoleArn: !GetAtt IAMStack.Outputs.EKSQSExtentionRoleArn
+        KubernetesVersion: !Ref KubernetesVersion
 
   PodIamRoleStack:
     Type: AWS::CloudFormation::Stack
