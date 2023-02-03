@@ -90,10 +90,10 @@ Resources:
           exec 3>&1 4>&2
           trap 'exec 2>&4 1>&3' 0 1 2 3
           exec 1>/tmp/log.out 2>&1
-          aws s3 cp s3://${S3Bucket}/${S3Prefix}/setup-kali.sh /tmp/setup-kali.sh
+          aws s3 cp s3://${S3Bucket}/setup-kali.sh /tmp/setup-kali.sh
           chmod +x /tmp/setup-kali.sh
           /tmp/setup-kali.sh
-          aws s3 cp s3://${S3Bucket}/${S3Prefix}/start-kali.sh /home/kali/start-kali.sh
+          aws s3 cp s3://${S3Bucket}/start-kali.sh /home/kali/start-kali.sh
           chmod +x /home/kali/start-kali.sh
           sleep 10
           mkdir /tmp/ssm 
