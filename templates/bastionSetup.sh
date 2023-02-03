@@ -7,7 +7,7 @@ function setup_environment_variables() {
 function install_kubernetes_client_tools() {
     printf "\nInstall K8s Client Tools"
     mkdir -p /usr/local/bin/
-    curl --retry 5 -o kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/amd64/kubectl
+    curl --retry 5 -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.13/2022-10-31/bin/linux/amd64/kubectl
     chmod +x ./kubectl
     mv ./kubectl /usr/local/bin/
     mkdir -p /root/bin
@@ -18,7 +18,7 @@ function install_kubernetes_client_tools() {
 source <(/usr/local/bin/kubectl completion bash)
 EOF
     chmod +x /etc/profile.d/kubectl.sh
-    curl --retry 5 -o helm.tar.gz https://get.helm.sh/helm-v3.3.4-linux-amd64.tar.gz
+    curl --retry 5 -o helm.tar.gz https://get.helm.sh/helm-v3.10.3-linux-amd64.tar.gz
     tar -xvf helm.tar.gz
     chmod +x ./linux-amd64/helm
     mv ./linux-amd64/helm /usr/local/bin/helm
@@ -49,7 +49,7 @@ users:
 - name: ${clusterArn}
   user:
     exec:
-      apiVersion: client.authentication.k8s.io/v1alpha1
+      apiVersion: client.authentication.k8s.io/v1beta1
       command: aws
       args:
         - --region

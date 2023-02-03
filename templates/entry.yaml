@@ -21,7 +21,7 @@ Parameters:
   # Environment Vars
   EnvAlias:
     Type: String
-    Default: 'ryan-cnap'
+    Default: 'cnap'
   EnvHash:
     Type: String
     Default: ''
