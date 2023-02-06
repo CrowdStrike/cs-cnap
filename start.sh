@@ -7,7 +7,7 @@ env_up(){
    S3Bucket=cnap-${EnvHash}
    AWS_REGION='us-west-2'
    S3Prefix='templates'
-   StackName=${S3Bucket}
+   StackName='cwp-demo-stack'
    TemplateName='entry.yaml'
 
    echo -e "$LB\n"
@@ -31,10 +31,6 @@ env_up(){
    read -p "Enter your Falcon API Key Client Secret: " CLIENT_SECRET
    echo -e "For the next variable (Falcon CID), use the entire string include the 2-character hash which you can find at https://falcon.crowdstrike.com/hosts/sensor-downloads"
    read -p "Enter your Falcon CID: " CS_CID
-#   echo -e "You can find your Docker API Token at https://falcon.crowdstrike.com/cloud-security/registration?return_to=eks."
-#   echo -e "Click 'Register new Kubernetes Cluster' > 'Self-Managed Kubernetes Service' > enter any random string in the 'Cluster Name' field > Click 'Generate'"
-#   echo -e "Copy the value for 'dockerAPIToken' from the script that appears and use it below"
-#   read -p "Enter your Falcon Docker API Token: " DOCKER_API_TOKEN
    read -p "Enter your Falcon Cloud [us-1]: " CS_CLOUD
    CS_CLOUD=${CS_CLOUD:-us-1}
    echo -e "Enter an existing key-pair in us-west-2 for connecting to EC2 instances. You can create one at https://us-west-2.console.aws.amazon.com/ec2#KeyPairs:"
@@ -60,13 +56,9 @@ env_up(){
    ParameterKey=FalconClientID,ParameterValue=$CLIENT_ID \
    ParameterKey=FalconClientSecret,ParameterValue=$CLIENT_SECRET \
    ParameterKey=CrowdStrikeCloud,ParameterValue=$CS_CLOUD \
-   ParameterKey=FalconCID,ParameterValue=$CS_CID #\
-#   ParameterKey=DockerAPIToken,ParameterValue=$DOCKER_API_TOKEN
+   ParameterKey=FalconCID,ParameterValue=$CS_CID
 
     echo -e "The Cloudformation stack will take 20-30 minutes to complete.$NC"
     echo -e "\n\nCheck the status at any time with the command \n\naws cloudformation describe-stacks --stack-name devdays-cnap-stack --region $AWS_REGION$NC\n\n"
-    #sleep 5
-    #id=`curl -s http://169.254.169.254/latest/meta-data/instance-id`
-    #aws ec2 terminate-instances --region $AWS_REGION --instance-ids $id
 }
 env_up
