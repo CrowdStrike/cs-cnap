@@ -116,7 +116,6 @@ Resources:
   ManagedNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
-      AmiType: launchTemplate
       ClusterName: !Ref EksClusterName
       InstanceTypes:
         - m5.large
