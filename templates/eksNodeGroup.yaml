@@ -48,7 +48,6 @@ Resources:
     Type: AWS::EC2::LaunchTemplate
     Properties:
       LaunchTemplateData:
-        ImageId: ami-042736b23d2ba7b29
         BlockDeviceMappings:
           - DeviceName: "/dev/xvda"
             Ebs:
@@ -116,6 +115,7 @@ Resources:
   ManagedNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
+      AmiType: AL2_x86_64
       ClusterName: !Ref EksClusterName
       InstanceTypes:
         - m5.large
