@@ -43,7 +43,8 @@ Resources:
     Properties:
       ClusterName: !Ref EksClusterName
       Namespace: falcon-operator
-      Url: https://raw.githubusercontent.com/CrowdStrike/falcon-operator/main/deploy/falcon-operator.yaml
+      Url: https://raw.githubusercontent.com/CrowdStrike/falcon-operator/2c8a63f3d964eaa51630f10c87ae0b11d984cbe8/deploy/falcon-operator.yaml
+      #Url: https://raw.githubusercontent.com/CrowdStrike/falcon-operator/main/deploy/falcon-operator.yaml
   InstallFalconContainer:
     Type: "AWSQS::Kubernetes::Resource"
     Condition: WantsContainer
