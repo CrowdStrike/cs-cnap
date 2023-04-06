@@ -6,95 +6,16 @@ Metadata:
     Exclusions: [ W9002, W9003, W9004, W9006 ]
 
 Parameters:
-  EnvAlias:
-    Type: String
-    Default: ''
-  EnvHash:
-    Type: String
-    Default: ''
   PermissionsBoundary:
     Type: String
     Default: ''
   OIDCIssuerURLWithoutProtocol:
     Type: String
     Default: ''
-  EksClusterName:
-    Type: String
-    Default: ''
-  VpcId:
-    Type: String
-    Default: ''
-  ControllerCPULimit:
-    Type: String
-    Default: "100m"
-  ControllerMemoryLimit:
-    Type: String
-    Default: "80Mi"
-  ControllerHostNetwork:
-    Type: String
-    AllowedValues: [ Enabled, Disabled ]
-    Default: Disabled  
-  LbcChartVersion:
-    Type: String
-    Default: '1.4.6'
 
 
 Conditions:
-  HostNetworkEnabled: !Equals [ !Ref ControllerHostNetwork, Enabled ]
   PermissionsBoundary: !Not [ !Equals [ !Ref PermissionsBoundary, '' ] ]
-
-Mappings:
-  RegionMap:
-    me-south-1:
-      lbrepo: 558608220178.dkr.ecr.me-south-1.amazonaws.com/amazon/aws-load-balancer-controller
-    eu-south-1:
-      lbrepo: 590381155156.dkr.ecr.eu-south-1.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-northeast-1:
-      lbrepo: 602401143452.dkr.ecr.ap-northeast-1.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-northeast-2:
-      lbrepo: 602401143452.dkr.ecr.ap-northeast-2.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-northeast-3:
-      lbrepo: 602401143452.dkr.ecr.ap-northeast-3.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-south-1:
-      lbrepo: 602401143452.dkr.ecr.ap-south-1.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-southeast-1:
-      lbrepo: 602401143452.dkr.ecr.ap-southeast-1.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-southeast-2:
-      lbrepo: 602401143452.dkr.ecr.ap-southeast-2.amazonaws.com/amazon/aws-load-balancer-controller
-    ca-central-1:
-      lbrepo: 602401143452.dkr.ecr.ca-central-1.amazonaws.com/amazon/aws-load-balancer-controller
-    eu-central-1:
-      lbrepo: 602401143452.dkr.ecr.eu-central-1.amazonaws.com/amazon/aws-load-balancer-controller
-    eu-north-1:
-      lbrepo: 602401143452.dkr.ecr.eu-north-1.amazonaws.com/amazon/aws-load-balancer-controller
-    eu-west-1:
-      lbrepo: 602401143452.dkr.ecr.eu-west-1.amazonaws.com/amazon/aws-load-balancer-controller
-    eu-west-2:
-      lbrepo: 602401143452.dkr.ecr.eu-west-2.amazonaws.com/amazon/aws-load-balancer-controller
-    eu-west-3:
-      lbrepo: 602401143452.dkr.ecr.eu-west-3.amazonaws.com/amazon/aws-load-balancer-controller
-    sa-east-1:
-      lbrepo: 602401143452.dkr.ecr.sa-east-1.amazonaws.com/amazon/aws-load-balancer-controller
-    us-east-1:
-      lbrepo: 602401143452.dkr.ecr.us-east-1.amazonaws.com/amazon/aws-load-balancer-controller
-    us-east-2:
-      lbrepo: 602401143452.dkr.ecr.us-east-2.amazonaws.com/amazon/aws-load-balancer-controller
-    us-west-1:
-      lbrepo: 602401143452.dkr.ecr.us-west-1.amazonaws.com/amazon/aws-load-balancer-controller
-    us-west-2:
-      lbrepo: 602401143452.dkr.ecr.us-west-2.amazonaws.com/amazon/aws-load-balancer-controller
-    ap-east-1:
-      lbrepo: 800184023465.dkr.ecr.ap-east-1.amazonaws.com/amazon/aws-load-balancer-controller
-    af-south-1:
-      lbrepo: 877085696533.dkr.ecr.af-south-1.amazonaws.com/amazon/aws-load-balancer-controller
-    cn-north-1:
-      lbrepo: 918309763551.dkr.ecr.cn-north-1.amazonaws.com.cn/amazon/aws-load-balancer-controller
-    cn-northwest-1:
-      lbrepo: 961992271922.dkr.ecr.cn-northwest-1.amazonaws.com.cn/amazon/aws-load-balancer-controller
-    us-gov-west-1:
-      lbrepo: 013241004608.dkr.ecr.us-gov-west-1.amazonaws.com/amazon/aws-load-balancer-controller
-    us-gov-east-1:
-      lbrepo: 151742754352.dkr.ecr.us-gov-east-1.amazonaws.com/amazon/aws-load-balancer-controller
 
 Resources:
   LoadBalancerControllerIAMRole:
@@ -123,7 +44,8 @@ Resources:
               "Action": "sts:AssumeRoleWithWebIdentity",
               "Condition": {
                 "StringEquals": {
-                  "${OIDCIssuerURLWithoutProtocol}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
+                  "${OIDCIssuerURLWithoutProtocol}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller",
+                  "${OIDCIssuerURLWithoutProtocol}:aud": "sts.amazonaws.com"
                 }
               }
             }
@@ -280,33 +202,6 @@ Resources:
                   - 'elasticloadbalancing:ModifyRule'
                 Resource: '*'
 
-  LoadBalancerControllerHelmChart:
-    Type: "AWSQS::Kubernetes::Helm"
-    Metadata: { cfn-lint: { config: { ignore_checks: [ E3012 ] } } }
-    Properties:
-      ClusterID: !Ref EksClusterName
-      Namespace: kube-system
-      Name: aws-load-balancer-controller
-      Repository: https://aws.github.io/eks-charts
-      Chart: aws-load-balancer-controller
-      Version: !Ref LbcChartVersion
-      Values:
-        clusterName: !Ref EksClusterName
-        region: !Sub '${AWS::Region}'
-        resources.limits.cpu: !Ref ControllerCPULimit
-        resources.limits.memory: !Ref ControllerMemoryLimit
-        replicaCount: 1
-        hostNetwork: !If [ HostNetworkEnabled, "true", "false" ]
-        image.repository: !FindInMap [ RegionMap, !Ref "AWS::Region", lbrepo ]
-        vpcId: !Ref VpcId
-      ValueYaml: !Sub |
-        serviceAccount:
-          annotations:
-            eks.amazonaws.com/role-arn: ${LoadBalancerControllerIAMRole.Arn}
-        nodeSelector:
-          kubernetes.io/os: linux
-
-
 Outputs:
-  LoadBalancerControllerHelmChart:
-    Value: !Ref LoadBalancerControllerHelmChart
+  RoleArn:
+    Value: !GetAtt LoadBalancerControllerIAMRole.Arn

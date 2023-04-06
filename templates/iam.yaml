@@ -22,11 +22,11 @@ Resources:
   #
   # Enable GD in this region only
   #
-  GDdetector:
-    Type: AWS::GuardDuty::Detector
-    Properties:
-      Enable: true
-      FindingPublishingFrequency: FIFTEEN_MINUTES
+  # GDdetector:
+  #   Type: AWS::GuardDuty::Detector
+  #   Properties:
+  #     Enable: true
+  #     FindingPublishingFrequency: FIFTEEN_MINUTES
   #
   ResourceReaderRole:
     Type: AWS::IAM::Role
@@ -217,15 +217,15 @@ Resources:
       PublicTypeArn: !Sub 'arn:aws:cloudformation:${AWS::Region}::type/resource/408988dff9e863704bcc72e7e13f8d645cee8311/AWSQS-Kubernetes-Resource'
       Type: RESOURCE
 
-  HelmResourceActivation:
-    Type: AWS::CloudFormation::TypeActivation
-    Properties:
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      LoggingConfig:
-        LogGroupName: awsqs-kubernetes-helm-logs
-        LogRoleArn: !GetAtt LogDeliveryRole.Arn
-      PublicTypeArn: !Sub 'arn:aws:cloudformation:${AWS::Region}::type/resource/408988dff9e863704bcc72e7e13f8d645cee8311/AWSQS-Kubernetes-Helm'
-      Type: RESOURCE
+  # HelmResourceActivation:
+  #   Type: AWS::CloudFormation::TypeActivation
+  #   Properties:
+  #     ExecutionRoleArn: !GetAtt ExecutionRole.Arn
+  #     LoggingConfig:
+  #       LogGroupName: awsqs-kubernetes-helm-logs
+  #       LogRoleArn: !GetAtt LogDeliveryRole.Arn
+  #     PublicTypeArn: !Sub 'arn:aws:cloudformation:${AWS::Region}::type/resource/408988dff9e863704bcc72e7e13f8d645cee8311/AWSQS-Kubernetes-Helm'
+  #     Type: RESOURCE
 
   ClusterResourceActivation:
     Type: AWS::CloudFormation::TypeActivation

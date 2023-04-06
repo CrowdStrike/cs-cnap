@@ -147,15 +147,12 @@ Resources:
     Properties:
       TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/loadBalancer.yaml'
       Parameters:
-        EnvAlias: !Ref EnvAlias
-        EnvHash: !Ref EnvHash
         PermissionsBoundary: !Ref PermissionsBoundary
-        VpcId: !GetAtt VPCStack.Outputs.VpcId
         OIDCIssuerURLWithoutProtocol: !GetAtt EKSControlPlaneStack.Outputs.OIDCIssuerURLWithoutProtocol
-        EksClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
 
   BastionStack:
     Type: AWS::CloudFormation::Stack
+    DependsOn: LoadBalancerStack
     Properties:
       TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/bastion.yaml'
       Parameters:
@@ -168,7 +165,7 @@ Resources:
         S3Bucket: !Ref S3Bucket
         PublicSubnet1ID: !GetAtt VPCStack.Outputs.SubnetPublic1
         ControlPlaneSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ControlPlaneSecurityGroupId
-        EnvironmentVariables: !Sub "CS_ENV=${CrowdStrikeCloud}, CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
+        EnvironmentVariables: !Sub "LoadBalancerControllerIAMRoleArn=${LoadBalancerStack.Outputs.RoleArn}, VPC_ID=${VPCStack.Outputs.VpcId}, CS_ENV=${CrowdStrikeCloud}, CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
 
   KaliStack:
     Type: AWS::CloudFormation::Stack

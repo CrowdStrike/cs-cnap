@@ -78,6 +78,35 @@ EOF
     chmod -R og-rwx /home/ssm-user/.kube
 }
 
+function deploy_load_balancer(){
+  echo LB Controller Role ARN is ${LoadBalancerControllerIAMRoleArn}
+  echo K8s Cluster Name is ${K8S_CLUSTER_NAME}
+  cat >aws-load-balancer-controller-service-account.yaml <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/name: aws-load-balancer-controller
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  annotations:
+    eks.amazonaws.com/role-arn: ${LoadBalancerControllerIAMRoleArn}
+    
+EOF
+  kubectl apply -f aws-load-balancer-controller-service-account.yaml --kubeconfig=/home/ec2-user/.kube/config
+
+  helm repo add eks https://aws.github.io/eks-charts && helm repo update
+  helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  --kubeconfig /home/ec2-user/.kube/config \
+  -n kube-system \
+  --set clusterName=${K8S_CLUSTER_NAME} \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller
+  # Verify 2/2 running with with kubectl get deployment -n kube-system aws-load-balancer-controller
+}
+
 setup_environment_variables
 install_kubernetes_client_tools
 setup_kubeconfig
+deploy_load_balancer
