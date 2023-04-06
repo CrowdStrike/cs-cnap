@@ -22,12 +22,12 @@ Resources:
   #
   # Enable GD in this region only
   #
-  # GDdetector:
-  #   Type: AWS::GuardDuty::Detector
-  #   Properties:
-  #     Enable: true
-  #     FindingPublishingFrequency: FIFTEEN_MINUTES
-  #
+  GDdetector:
+    Type: AWS::GuardDuty::Detector
+    Properties:
+      Enable: true
+      FindingPublishingFrequency: FIFTEEN_MINUTES
+  
   ResourceReaderRole:
     Type: AWS::IAM::Role
     Properties:
