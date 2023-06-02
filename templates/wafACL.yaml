@@ -5,6 +5,17 @@ Resources:
     Type: 'AWS::WAFv2::WebACL'
     Properties:
       Name: DevDaysWebACL
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
       Scope: REGIONAL
       DefaultAction:
         Allow: { }

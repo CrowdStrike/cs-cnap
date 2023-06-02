@@ -60,6 +60,17 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: Called on stack deletion. Removes objects from ECR and S3 to enabled stack deletion to complete
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt NotificationRole.Arn
