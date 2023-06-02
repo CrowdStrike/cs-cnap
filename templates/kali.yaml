@@ -17,26 +17,6 @@ Parameters:
   PermissionsBoundary:
     Type: String
     Default: ''
-  Owner:
-    Type: String
-    Description: Owner/Creator of resource
-    MaxLength: 20
-    Default: CrowdStrike
-  Business:
-    Type: String
-    Description: Department
-    MaxLength: 20
-    Default: DevDays
-  Accounting:
-    Type: String
-    Description: Billing Account
-    MaxLength: 20
-    Default: DevDays
-  Department:
-    Type: String
-    Description: Department
-    MaxLength: 20
-    Default: DevDays
   KeyPairName:
     Description: Public/private key pairs allow you to securely connect to your instance
       after it launches
@@ -112,18 +92,16 @@ Resources:
       Tags:
         - Key: Name
           Value: 'Kali'
-        - Key: CRWD_MANAGED
-          Value: 'YES'
-        - Key: ci-key-username
-          Value: 'kali'
-        - Key: tag-accounting
-          Value: !Ref Accounting
-        - Key: tag-business
-          Value: !Ref Business
-        - Key: tag-department
-          Value: !Ref Department
-        - Key: tag-owner
-          Value: !Ref Owner
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
   KaliBootstrapInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
@@ -150,6 +128,16 @@ Resources:
       Tags:
         - Key: Network
           Value: Public
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
   VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:

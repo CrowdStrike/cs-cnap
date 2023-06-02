@@ -130,11 +130,32 @@ Resources:
       Tags:
         - Key: Name
           Value: Security Hub Integration Server
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
 
   # SQS queues to hold detections from the instance
   SecHubIntQueue:
     Type: AWS::SQS::Queue
     Properties:
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
       VisibilityTimeout: 120
       QueueName: !Join
         - '-'
@@ -166,6 +187,17 @@ Resources:
       Role: !GetAtt SecHubIntLambdaRole.Arn
       Runtime: python3.7
       Timeout: 60
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
   SecHubIntLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -290,6 +322,18 @@ Resources:
   # Enable SecurityHub
   RegionSecurityHub:
     Type: 'AWS::SecurityHub::Hub'
+    Properties:
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
 
 #  # VPC Flow logging
 #  FlowLogRole:

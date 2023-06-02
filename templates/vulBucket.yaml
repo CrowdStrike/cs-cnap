@@ -24,6 +24,17 @@ Resources:
       LoggingConfiguration:
         DestinationBucketName: !Ref ConfidentialLoggingBucket
         LogFilePrefix: testing-logs
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
   ConfidentialLoggingBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -31,6 +42,17 @@ Resources:
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerPreferred
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
   CopyRole:
     Type: AWS::IAM::Role
     Properties:
@@ -81,6 +103,17 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: Copies objects from a source S3 bucket to a destination
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt CopyRole.Arn
@@ -194,6 +227,17 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: Called on stack deletion. Removes objects from S3 to enabled stack deletion to complete
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
       Handler: index.handler
       Runtime: python3.8
       Role: !GetAtt CleanUpBucketRole.Arn
