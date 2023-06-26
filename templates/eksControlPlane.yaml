@@ -23,10 +23,6 @@ Parameters:
     Type: String
   SubnetPublic2:
     Type: String
-  EKSCodeBuildServiceRoleArn:
-    Type: String
-  EKSQSExtentionRoleArn:
-    Type: String
   Username:
     Type: String
     Default: "wus-cloudshare"
@@ -68,7 +64,7 @@ Resources:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSServicePolicy'
 
   Cluster:
-    Type: AWSQS::EKS::Cluster
+    Type: AWS::EKS::Cluster
     Metadata:
       cfn-lint:
         config:
@@ -98,24 +94,6 @@ Resources:
           - !Ref SubnetPrivate2
       RoleArn: !GetAtt serviceRole.Arn
       Version: !Ref KubernetesVersion
-      KubernetesApiAccess:
-        Users:
-          - Arn: !Sub "arn:aws:iam::${AWS::AccountId}:user/${Username}"
-            Username: !Sub "arn:aws:iam::${AWS::AccountId}:user/${Username}"
-            Groups: [ "system:masters" ]
-        Roles:
-          - Arn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CS-Okta-Full-Admins-Write"
-            Username: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CS-Okta-Full-Admins-Write"
-            Groups: [ 'system:masters' ]
-          - Arn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${BastionRole}"
-            Username: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${BastionRole}"
-            Groups: [ 'system:masters' ]
-          - Arn: !Ref EKSCodeBuildServiceRoleArn
-            Username: EKSCodeDeploy
-            Groups: [ 'system:masters' ]
-          - Arn: !Ref EKSQSExtentionRoleArn
-            Username: EKSK8sExtension
-            Groups: [ 'system:masters' ]
 
   ClusterOIDCProvider:
     Type: AWS::IAM::OIDCProvider
