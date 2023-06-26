@@ -5,7 +5,7 @@ LB="\033[1;34m"
 env_up(){
    EnvHash=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
    S3Bucket=cnap-${EnvHash}
-   AWS_REGION='us-west-2'
+   AWS_REGION='us-east-2'
    S3Prefix='templates'
    StackName='cwp-demo-stack'
    TemplateName='entry.yaml'
@@ -59,6 +59,6 @@ env_up(){
    ParameterKey=FalconCID,ParameterValue=$CS_CID
 
     echo -e "The Cloudformation stack will take 20-30 minutes to complete.$NC"
-    echo -e "\n\nCheck the status at any time with the command \n\naws cloudformation describe-stacks --stack-name devdays-cnap-stack --region $AWS_REGION$NC\n\n"
+    echo -e "\n\nCheck the status at any time with the command \n\naws cloudformation describe-stacks --stack-name $StackName --region $AWS_REGION$NC\n\n"
 }
 env_up
