@@ -334,7 +334,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}::EKSName"
   OIDCIssuerURLWithoutProtocol:
-    Value: !Join [ '', !Split [ 'https://', !GetAtt Cluster.OIDCIssuerURL ] ]
+    Value: !Join [ '', !Split [ 'https://', !GetAtt Cluster.OpenIdConnectIssuerUrl ] ]
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}::OIDCIssuerURLWithoutProtocol"
