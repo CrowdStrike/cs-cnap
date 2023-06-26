@@ -89,7 +89,6 @@ Resources:
         SubnetPublic1: !GetAtt VPCStack.Outputs.SubnetPublic1
         SubnetPublic2: !GetAtt VPCStack.Outputs.SubnetPublic2
         EKSCodeBuildServiceRoleArn: !GetAtt IAMStack.Outputs.EKSCodeBuildServiceRoleArn
-        EKSQSExtentionRoleArn: !GetAtt IAMStack.Outputs.EKSQSExtentionRoleArn
         KubernetesVersion: !Ref KubernetesVersion
 
   PodIamRoleStack:
@@ -103,28 +102,28 @@ Resources:
         PermissionsBoundary: !Ref PermissionsBoundary
         OIDCIssuerURLWithoutProtocol: !GetAtt EKSControlPlaneStack.Outputs.OIDCIssuerURLWithoutProtocol
 
-  CodePipelineStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - IAMStack
-      - EKSControlPlaneStack
-      - PodIamRoleStack
-    Properties:
-      TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/codePipeline.yaml'
-      Parameters:
-        EnvAlias: !Ref EnvAlias
-        EnvHash: !Ref EnvHash
-        FalconClientID: !Ref FalconClientID
-        FalconClientSecret: !Ref FalconClientSecret
-        FalconCID: !Ref FalconCID
-        CrowdStrikeCloud: !Ref CrowdStrikeCloud
-        S3CodeBucketName: !Ref S3Bucket
-        S3CodeBucketKey: code.zip
-        EKSCodeBuildServiceRoleArn: !GetAtt IAMStack.Outputs.EKSCodeBuildServiceRoleArn
-        EKSClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
-        PodS3AccessRoleArn: !GetAtt PodIamRoleStack.Outputs.PodS3AccessRoleArn
-        PermissionsBoundary: !Ref PermissionsBoundary
-        WafRulesARN: !GetAtt WafRules.Outputs.WebACLARN
+  # CodePipelineStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   DependsOn:
+  #     - IAMStack
+  #     - EKSControlPlaneStack
+  #     - PodIamRoleStack
+  #   Properties:
+  #     TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/codePipeline.yaml'
+  #     Parameters:
+  #       EnvAlias: !Ref EnvAlias
+  #       EnvHash: !Ref EnvHash
+  #       FalconClientID: !Ref FalconClientID
+  #       FalconClientSecret: !Ref FalconClientSecret
+  #       FalconCID: !Ref FalconCID
+  #       CrowdStrikeCloud: !Ref CrowdStrikeCloud
+  #       S3CodeBucketName: !Ref S3Bucket
+  #       S3CodeBucketKey: code.zip
+  #       EKSCodeBuildServiceRoleArn: !GetAtt IAMStack.Outputs.EKSCodeBuildServiceRoleArn
+  #       EKSClusterName: !GetAtt EKSControlPlaneStack.Outputs.UniqueClusterName
+  #       PodS3AccessRoleArn: !GetAtt PodIamRoleStack.Outputs.PodS3AccessRoleArn
+  #       PermissionsBoundary: !Ref PermissionsBoundary
+  #       WafRulesARN: !GetAtt WafRules.Outputs.WebACLARN
 
   EKSNodeGroupStack:
     Type: AWS::CloudFormation::Stack
@@ -167,30 +166,30 @@ Resources:
         ControlPlaneSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ControlPlaneSecurityGroupId
         EnvironmentVariables: !Sub "LoadBalancerControllerIAMRoleArn=${LoadBalancerStack.Outputs.RoleArn}, VPC_ID=${VPCStack.Outputs.VpcId}, CS_ENV=${CrowdStrikeCloud}, CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
 
-  KaliStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/kali.yaml'
-      Parameters:
-        EnvAlias: !Ref EnvAlias
-        EnvHash: !Ref EnvHash
-        KeyPairName: !Ref KeyPairName
-        S3Bucket: !Ref S3Bucket
-        VPCCIDR: !GetAtt VPCStack.Outputs.VpcCIDROut
-        PublicSubnetCIDR: !GetAtt VPCStack.Outputs.PublicSubnet1CIDROut
-        NATGatewayEIP: !GetAtt VPCStack.Outputs.NATGatewayEIP
-        RemoteAccessCIDR: !Ref RemoteAccessCIDR
-        PermissionsBoundary: !Ref PermissionsBoundary
+  # KaliStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/kali.yaml'
+  #     Parameters:
+  #       EnvAlias: !Ref EnvAlias
+  #       EnvHash: !Ref EnvHash
+  #       KeyPairName: !Ref KeyPairName
+  #       S3Bucket: !Ref S3Bucket
+  #       VPCCIDR: !GetAtt VPCStack.Outputs.VpcCIDROut
+  #       PublicSubnetCIDR: !GetAtt VPCStack.Outputs.PublicSubnet1CIDROut
+  #       NATGatewayEIP: !GetAtt VPCStack.Outputs.NATGatewayEIP
+  #       RemoteAccessCIDR: !Ref RemoteAccessCIDR
+  #       PermissionsBoundary: !Ref PermissionsBoundary
 
-  ConfidentialBucket:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/vulBucket.yaml'
-      Parameters:
-        EnvAlias: !Ref EnvAlias
-        EnvHash: !Ref EnvHash
-        TemplateBucket: !Ref S3Bucket
-        PermissionsBoundary: !Ref PermissionsBoundary
+  # ConfidentialBucket:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/vulBucket.yaml'
+  #     Parameters:
+  #       EnvAlias: !Ref EnvAlias
+  #       EnvHash: !Ref EnvHash
+  #       TemplateBucket: !Ref S3Bucket
+  #       PermissionsBoundary: !Ref PermissionsBoundary
   #  FigInstall:
   #    Type: AWS::CloudFormation::Stack
   #    Properties:
@@ -217,7 +216,7 @@ Resources:
   #       FalconClientSecret: !Ref FalconClientSecret
   #       PermissionsBoundary: !Ref PermissionsBoundary
 
-  WafRules:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/wafACL.yaml'
+  # WafRules:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/wafACL.yaml'

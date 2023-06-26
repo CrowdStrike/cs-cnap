@@ -1,0 +1,355 @@
+eksCluster.yaml
+
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates the EKS cluster management plane'
+Parameters:
+  EnvAlias:
+    Type: String
+    Default: ''
+  EnvHash:
+    Type: String
+    Default: ''
+  PermissionsBoundary:
+    Type: String
+    Default: ''
+  BastionRole:
+    Type: String
+  VpcId:
+    Type: String
+  SubnetPrivate1:
+    Type: String
+  SubnetPrivate2:
+    Type: String
+  SubnetPublic1:
+    Type: String
+  SubnetPublic2:
+    Type: String
+  EKSCodeBuildServiceRoleArn:
+    Type: String
+  EKSQSExtentionRoleArn:
+    Type: String
+  Username:
+    Type: String
+    Default: "wus-cloudshare"
+    Description: IAM User who will be mapped system:masters
+  KubernetesVersion:
+    Type: String
+    Default: ""
+Conditions:
+  PermissionsBoundary: !Not [ !Equals [ !Ref PermissionsBoundary, '' ] ]
+
+Resources:
+  ClusterSharedNodeSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Communication between all nodes in the cluster
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: "${AWS::StackName}/ClusterSharedNodeSecurityGroup"
+      VpcId:
+        Ref: VpcId
+  serviceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary:
+        Fn::If:
+          - PermissionsBoundary
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:policy/${PermissionsBoundary}'
+          - Ref: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: eks.amazonaws.com }
+            Action: sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSClusterPolicy'
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSServicePolicy'
+
+  Cluster:
+    Type: AWS::EKS::Cluster
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks: [ E3001 ]
+    Properties:
+      Name: !Sub '${EnvAlias}-EKS-Cluster'
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
+      ResourcesVpcConfig:
+        EndpointPrivateAccess: true
+        EndpointPublicAccess: true
+        SecurityGroupIds:
+          - !Ref ControlPlaneSecurityGroup
+        SubnetIds:
+          - !Ref SubnetPublic1
+          - !Ref SubnetPublic2
+          - !Ref SubnetPrivate1
+          - !Ref SubnetPrivate2
+      RoleArn: !GetAtt serviceRole.Arn
+      Version: !Ref KubernetesVersion
+
+  ClusterOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3001
+            - E1010
+    Properties:
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
+      Url: !GetAtt Cluster.OIDCIssuerURL
+
+  ControlPlaneSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Communication between the control plane and worker nodegroups
+      Tags:
+        - Key: Name
+          Value:
+            Fn::Sub: "${AWS::StackName}/ControlPlaneSecurityGroup"
+      VpcId:
+        Ref: VpcId
+  IngressDefaultClusterToNodeSG:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow managed and unmanaged nodes to communicate with each other
+        (all ports)
+      FromPort: 0
+      GroupId:
+        Ref: ClusterSharedNodeSecurityGroup
+      IpProtocol: "-1"
+      SourceSecurityGroupId:
+        Fn::GetAtt:
+          - Cluster
+          - ClusterSecurityGroupId
+      ToPort: 65535
+  IngressInterNodeGroupSG:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow nodes to communicate with each other (all ports)
+      FromPort: 0
+      GroupId:
+        Ref: ClusterSharedNodeSecurityGroup
+      IpProtocol: "-1"
+      SourceSecurityGroupId:
+        Ref: ClusterSharedNodeSecurityGroup
+      ToPort: 65535
+  IngressNodeToDefaultClusterSG:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow unmanaged nodes to communicate with control plane (all ports)
+      FromPort: 0
+      GroupId:
+        Fn::GetAtt:
+          - Cluster
+          - ClusterSecurityGroupId
+      IpProtocol: "-1"
+      SourceSecurityGroupId:
+        Ref: ClusterSharedNodeSecurityGroup
+      ToPort: 65535
+  PolicyCloudWatchMetrics:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - cloudwatch:PutMetricData
+            Effect: Allow
+            Resource: "*"
+        Version: '2012-10-17'
+      PolicyName:
+        Fn::Sub: "${AWS::StackName}-PolicyCloudWatchMetrics"
+      Roles:
+        - Ref: serviceRole
+  PolicyELBPermissions:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ec2:DescribeAccountAttributes
+              - ec2:DescribeAddresses
+              - ec2:DescribeInternetGateways
+            Effect: Allow
+            Resource: "*"
+        Version: '2012-10-17'
+      PolicyName:
+        Fn::Sub: "${AWS::StackName}-PolicyELBPermissions"
+      Roles:
+        - Ref: serviceRole
+  CleanUpLoadBalancerResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt CleanUpLoadBalancerFunction.Arn
+      aws_region: !Ref "AWS::Region"
+      aws_account: !Ref "AWS::AccountId"
+      cluster_name: !Ref Cluster
+  CleanupLoadBalancersRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary:
+        Fn::If:
+          - PermissionsBoundary
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:policy/${PermissionsBoundary}'
+          - Ref: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: LambdaRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: !Sub 'arn:${AWS::Partition}:logs:*:*:*'
+              - Action:
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:DescribeTags
+                  - elasticloadbalancing:DeleteLoadBalancer
+                  - ec2:DescribeTags
+                  - ec2:DeleteSecurityGroup
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                  - ec2:DetachNetworkInterface
+                  - ec2:DescribeSecurityGroups
+                  - ec2:RevokeSecurityGroupEgress
+                  - ec2:RevokeSecurityGroupIngress
+                Effect: Allow
+                Resource: '*'
+  CleanUpLoadBalancerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Called on stack deletion. Removes objects from ECR and S3 to enabled stack deletion to complete
+      Tags:
+        - Key: cstag-account
+          Value: dev
+        - Key: cstag-business
+          Value: Sales
+        - Key: cstag-product
+          Value: Host Platform
+        - Key: cstag-department
+          Value: Sales-310000
+        - Key: cstag-owner
+          Value: cnap-workshop
+      Handler: index.handler
+      Runtime: python3.8
+      Role: !GetAtt CleanupLoadBalancersRole.Arn
+      Timeout: 240
+      Code:
+        ZipFile: |
+          import json
+          import logging
+          import boto3
+          import cfnresponse
+          
+          logger = logging.getLogger()
+          logger.setLevel(logging.DEBUG)
+          
+          def delete_k8s_loadbalancer(eks_cluster_name, region):
+              lbs_to_remove=[]
+          
+              elb = boto3.client('elbv2', region_name=region)
+              response=elb.describe_load_balancers()
+              logger.debug("lb describe {}".format(response))
+              for lb in response['LoadBalancers']:
+                  lbarn= lb.get('LoadBalancerArn')
+                  try:
+                      lb_data=elb.describe_tags(ResourceArns=[lbarn])
+                      tags = lb_data['TagDescriptions'][0]['Tags']
+                      for tag in tags:
+                          if tag["Key"] == 'elbv2.k8s.aws/cluster' and tag['Value'] == eks_cluster_name:
+                              lbs_to_remove.append(lbarn) 
+                              logger.info("LoadBalancerArn list {}".format(lbs_to_remove))
+                      for lb in lbs_to_remove:
+                          logger.info("Removing elb {}".format(lb))
+                          elb.delete_load_balancer(LoadBalancerArn=lb)
+                  except Exception as apierror:
+                      logger.debug(apierror)
+                      pass
+          
+          
+          
+          
+          def handler(event, context):
+              # make sure we send a failure to CloudFormation success
+              logger.debug('Received event:{}'.format(json.dumps(event)))
+              status = cfnresponse.SUCCESS
+              # Delete the repositories int the list
+              try:
+                  cluster_name = event['ResourceProperties']['cluster_name']
+                  aws_account = event['ResourceProperties']['aws_account']
+                  aws_region = event['ResourceProperties']['aws_region']
+                  if event['RequestType'] == 'Delete':
+                      delete_k8s_loadbalancer(cluster_name, aws_region)
+          
+              except Exception as error:
+                  logger.error('Exception: {}'.format(error))
+              finally:
+                  logger.error('Finish: ')
+                  pass
+                  cfnresponse.send(event, context, status, {}, None)
+
+
+Outputs:
+  EksArn:
+    Value: !GetAtt Cluster.Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}::EksArn"
+  EKSEndpoint:
+    Value: !GetAtt Cluster.Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}::EKSEndpoint"
+  ClusterSecurityGroupId:
+    Value: !Ref ClusterSharedNodeSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}::ClusterSecurityGroupId"
+  UniqueClusterName:
+    Value: !Ref Cluster
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}::EKSName"
+  OIDCIssuerURLWithoutProtocol:
+    Value: !Join [ '', !Split [ 'https://', !GetAtt Cluster.OIDCIssuerURL ] ]
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}::OIDCIssuerURLWithoutProtocol"
+  CAData:
+    Value: !GetAtt Cluster.CertificateAuthorityData
+
+  ControlPlaneSecurityGroupId:
+    Value: !Ref ControlPlaneSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}::ControlPlaneSecurityGroupId"
+
