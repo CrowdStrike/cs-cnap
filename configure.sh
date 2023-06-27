@@ -1,13 +1,18 @@
 function setup_environment_variables() {
-    region=$(curl -sq http://169.254.169.254/latest/meta-data/placement/availability-zone/)
-    region=${region: :-1}
-    accountId=$(aws sts get-caller-identity | jq -r .Account)
+    REGION=$(curl -sq http://169.254.169.254/latest/meta-data/placement/availability-zone/)
+    REGION=${REGION: :-1}
+    ACCOUNT_ID=$(aws sts get-caller-identity | jq -r .Account)
+    CLUSTER_CA_DATA=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-ca-data --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_NAME=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-name --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_ENDPOINT=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-endpoint --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    LB_ROLE_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-lb-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
 }
 
 function install_kubernetes_client_tools() {
     printf "\nInstall K8s Client Tools"
     mkdir -p /usr/local/bin/
-    curl --retry 5 -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.23.13/2022-10-31/bin/linux/amd64/kubectl
+    curl --retry 5 -o kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.24.13/2023-05-11/bin/linux/amd64/kubectl
     chmod +x ./kubectl
     mv ./kubectl /usr/local/bin/
     mkdir -p /root/bin
@@ -23,47 +28,39 @@ EOF
     mv ./linux-amd64/helm /usr/local/bin/helm
     ln -s /usr/local/bin/helm /opt/aws/bin
     rm -rf ./linux-amd64/
-# Install awscli v2
-    curl -O "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-    unzip -o awscli-exe-linux-x86_64.zip
-    sudo ./aws/install
-    rm awscli-exe-linux-x86_64.zip
-    mv /bin/aws /bin/aws.v1
-    ln -s /usr/local/aws-cli/v2/current/dist/aws /bin/aws
 }
 
 function setup_kubeconfig() {
-    clusterArn="arn:aws:eks:$region:$accountId:cluster/$K8S_CLUSTER_NAME"
     mkdir -p /home/ec2-user/.kube
     source /root/.bashrc
     cat > /home/ec2-user/.kube/config <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: ${K8S_CA_DATA}
-    server: ${K8S_ENDPOINT}
-  name: ${clusterArn}
+    certificate-authority-data: ${CLUSTER_CA_DATA}
+    server: ${CLUSTER_ENDPOINT}
+  name: ${CLUSTER_ARN}
 contexts:
 - context:
-    cluster: ${clusterArn}
-    user: ${clusterArn}
-  name: ${clusterArn}
-current-context: ${clusterArn}
+    cluster: ${CLUSTER_ARN}
+    user: ${CLUSTER_ARN}
+  name: ${CLUSTER_ARN}
+current-context: ${CLUSTER_ARN}
 kind: Config
 preferences: {}
 users:
-- name: ${clusterArn}
+- name: ${CLUSTER_ARN}
   user:
     exec:
       apiVersion: client.authentication.k8s.io/v1beta1
       command: aws
       args:
         - --region
-        - ${region}
+        - ${REGION}
         - eks
         - get-token
         - --cluster-name
-        - ${K8S_CLUSTER_NAME}
+        - ${CLUSTER_NAME}
 EOF
     printf "\nKube Config:\n"
     cat /home/ec2-user/.kube/config
@@ -79,8 +76,8 @@ EOF
 }
 
 function deploy_load_balancer(){
-  echo LB Controller Role ARN is ${LoadBalancerControllerIAMRoleArn}
-  echo K8s Cluster Name is ${K8S_CLUSTER_NAME}
+  echo LB Controller Role ARN is ${LB_ROLE_ARN}
+  echo K8s Cluster Name is ${CLUSTER_NAME}
   cat >aws-load-balancer-controller-service-account.yaml <<EOF
 apiVersion: v1
 kind: ServiceAccount
@@ -91,16 +88,15 @@ metadata:
   name: aws-load-balancer-controller
   namespace: kube-system
   annotations:
-    eks.amazonaws.com/role-arn: ${LoadBalancerControllerIAMRoleArn}
+    eks.amazonaws.com/role-arn: ${LB_ROLE_ARN}
     
 EOF
   kubectl apply -f aws-load-balancer-controller-service-account.yaml --kubeconfig=/home/ec2-user/.kube/config
-
   helm repo add eks https://aws.github.io/eks-charts && helm repo update
   helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
   --kubeconfig /home/ec2-user/.kube/config \
   -n kube-system \
-  --set clusterName=${K8S_CLUSTER_NAME} \
+  --set clusterName=${CLUSTER_NAME} \
   --set serviceAccount.create=false \
   --set serviceAccount.name=aws-load-balancer-controller
   # Verify 2/2 running with with kubectl get deployment -n kube-system aws-load-balancer-controller

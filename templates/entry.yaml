@@ -42,13 +42,9 @@ Parameters:
   # Shared K8S Attributes
   KubernetesVersion:
     Type: String
-    AllowedValues: [ "1.21", "1.22", "1.23", "1.24" ]
-    Default: "1.23"
+    AllowedValues: [ "1.23", "1.24", "1.25" ]
+    Default: "1.24"
     Description: Kubernetes control plane version.
-  # Optional
-  RemoteAccessCIDR:
-    Type: String
-    Default: 1.1.1.1/32
 
 Resources:
 
@@ -148,23 +144,6 @@ Resources:
         PermissionsBoundary: !Ref PermissionsBoundary
         OIDCIssuerURLWithoutProtocol: !GetAtt EKSControlPlaneStack.Outputs.OIDCIssuerURLWithoutProtocol
 
-  BastionStack:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: LoadBalancerStack
-    Properties:
-      TemplateURL: !Sub 'https://${S3Bucket}.s3.amazonaws.com/bastion.yaml'
-      Parameters:
-        EnvAlias: !Ref EnvAlias
-        EnvHash: !Ref EnvHash
-        KeyPairName: !Ref KeyPairName
-        RemoteAccessCIDR: !Ref RemoteAccessCIDR
-        BastionRole: !GetAtt IAMStack.Outputs.BastionHostRole
-        VPCID: !GetAtt VPCStack.Outputs.VpcId
-        S3Bucket: !Ref S3Bucket
-        PublicSubnet1ID: !GetAtt VPCStack.Outputs.SubnetPublic1
-        ControlPlaneSecurityGroupId: !GetAtt EKSControlPlaneStack.Outputs.ControlPlaneSecurityGroupId
-        EnvironmentVariables: !Sub "LoadBalancerControllerIAMRoleArn=${LoadBalancerStack.Outputs.RoleArn}, VPC_ID=${VPCStack.Outputs.VpcId}, CS_ENV=${CrowdStrikeCloud}, CS_CLIENT_ID=${FalconClientID}, CS_CLIENT_SECRET=${FalconClientSecret}, K8S_CLUSTER_NAME=${EKSControlPlaneStack.Outputs.UniqueClusterName}, K8S_CA_DATA=${EKSControlPlaneStack.Outputs.CAData}, K8S_VERSION=${KubernetesVersion}, K8S_ENDPOINT=${EKSControlPlaneStack.Outputs.EKSEndpoint}"
-
   # KaliStack:
   #   Type: AWS::CloudFormation::Stack
   #   Properties:
@@ -177,7 +156,6 @@ Resources:
   #       VPCCIDR: !GetAtt VPCStack.Outputs.VpcCIDROut
   #       PublicSubnetCIDR: !GetAtt VPCStack.Outputs.PublicSubnet1CIDROut
   #       NATGatewayEIP: !GetAtt VPCStack.Outputs.NATGatewayEIP
-  #       RemoteAccessCIDR: !Ref RemoteAccessCIDR
   #       PermissionsBoundary: !Ref PermissionsBoundary
 
   # ConfidentialBucket:
@@ -189,6 +167,7 @@ Resources:
   #       EnvHash: !Ref EnvHash
   #       TemplateBucket: !Ref S3Bucket
   #       PermissionsBoundary: !Ref PermissionsBoundary
+  
   #  FigInstall:
   #    Type: AWS::CloudFormation::Stack
   #    Properties:
@@ -199,7 +178,6 @@ Resources:
   #        PermissionsBoundary: !Ref PermissionsBoundary
   #        VpcId: !GetAtt VPCStack.Outputs.VpcId
   #        PublicSubnet1: !GetAtt VPCStack.Outputs.SubnetPublic1
-  #        RemoteAccessCIDR: !Ref RemoteAccessCIDR
   #        S3Bucket: !Ref S3Bucket
 
   # HorizonSetup:
