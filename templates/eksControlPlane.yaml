@@ -311,6 +311,37 @@ Resources:
                   pass
                   cfnresponse.send(event, context, status, {}, None)
 
+  ClusterNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-name
+      Type: String
+      Value: !Ref Cluster
+      Description: SSM Parameter for EKS Cluster Name.
+  
+  ClusterNameArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-arn
+      Type: String
+      Value: !GetAtt Cluster.Arn
+      Description: SSM Parameter for EKS Cluster ARN.
+  
+  ClusterEndpointParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-endpoint
+      Type: String
+      Value: !GetAtt Cluster.Endpoint
+      Description: SSM Parameter for EKS Endpoint.
+
+  ClusterCaDataParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-ca-data
+      Type: String
+      Value: !GetAtt Cluster.CertificateAuthorityData
+      Description: SSM Parameter for EKS CA Data.
 
 Outputs:
   EksArn:
