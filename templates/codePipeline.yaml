@@ -840,11 +840,3 @@ Resources:
                   logging.error('Exception: {}'.format(error))
               finally:
                   cfnresponse.send(event, context, status, {}, None)
-
-  CPRoleArnParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: cnap-cp-role-arn
-      Type: String
-      Value: !GetAtt ECRCodeBuildServiceRole.Arn
-      Description: SSM Parameter for Code Pipeline Role ARN.
