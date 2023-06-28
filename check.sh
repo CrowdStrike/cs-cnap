@@ -15,7 +15,6 @@ elif  [[ $STATUS == *"CREATE_FAILED"* ]]; then
   echo ""
 else
   echo ""
-  echo "Not complete, stack status:"
   echo $STATUS
   echo ""
 fi
