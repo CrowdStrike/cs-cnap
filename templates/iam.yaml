@@ -354,3 +354,5 @@ Outputs:
   BastionHostRole:
     Description: Bastion IAM role name.
     Value: !Ref BastionRole
+  EKSCodeBuildServiceRoleArn:
+    Value: !GetAtt EKSCodeBuildServiceRole.Arn
