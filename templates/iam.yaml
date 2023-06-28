@@ -355,7 +355,7 @@ Resources:
     Properties:
       Name: cnap-cp-role-arn
       Type: String
-      Value: !GetAtt ECRCodeBuildServiceRole.Arn
+      Value: !GetAtt EKSCodeBuildServiceRole.Arn
       Description: SSM Parameter for Code Pipeline Role ARN.
 
 Outputs:
