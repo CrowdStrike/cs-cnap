@@ -1,3 +1,4 @@
+#!/bin/bash
 function setup_environment_variables() {
     REGION=$(curl -sq http://169.254.169.254/latest/meta-data/placement/availability-zone/)
     REGION=${REGION: :-1}
@@ -7,6 +8,7 @@ function setup_environment_variables() {
     CLUSTER_NAME=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-name --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
     CLUSTER_ENDPOINT=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-endpoint --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
     LB_ROLE_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-lb-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CP_ROLE_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-cp-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
 }
 
 function install_kubernetes_client_tools() {
@@ -102,7 +104,24 @@ EOF
   # Verify 2/2 running with with kubectl get deployment -n kube-system aws-load-balancer-controller
 }
 
+function setup_eksctl {
+  ARCH=amd64
+  PLATFORM=$(uname -s)_$ARCH
+  curl -sLO "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+  curl -sL "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+  tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+  sudo mv /tmp/eksctl /usr/local/bin
+}
+
+function add_code_pipeline_role {
+  eksctl create iamidentitymapping --cluster $CLUSTER_NAME --region=$REGION \
+  --arn $CP_ROLE_ARN --username cp-admin --group system:masters \
+  --no-duplicate-arns
+}
+
 setup_environment_variables
 install_kubernetes_client_tools
 setup_kubeconfig
 deploy_load_balancer
+setup_eksctl
+add_code_pipeline_role
