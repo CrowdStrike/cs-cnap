@@ -840,4 +840,3 @@ Resources:
                   logging.error('Exception: {}'.format(error))
               finally:
                   cfnresponse.send(event, context, status, {}, None)
-

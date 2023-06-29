@@ -202,6 +202,14 @@ Resources:
                   - 'elasticloadbalancing:ModifyRule'
                 Resource: '*'
 
+  LBRoleArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-lb-role-arn
+      Type: String
+      Value: !GetAtt LoadBalancerControllerIAMRole.Arn
+      Description: SSM Parameter for Load Balancer Controller Role ARN.
+
 Outputs:
   RoleArn:
     Value: !GetAtt LoadBalancerControllerIAMRole.Arn

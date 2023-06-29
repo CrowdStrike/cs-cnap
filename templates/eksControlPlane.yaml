@@ -23,10 +23,6 @@ Parameters:
     Type: String
   SubnetPublic2:
     Type: String
-  EKSCodeBuildServiceRoleArn:
-    Type: String
-  EKSQSExtentionRoleArn:
-    Type: String
   Username:
     Type: String
     Default: "wus-cloudshare"
@@ -68,7 +64,7 @@ Resources:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/AmazonEKSServicePolicy'
 
   Cluster:
-    Type: AWSQS::EKS::Cluster
+    Type: AWS::EKS::Cluster
     Metadata:
       cfn-lint:
         config:
@@ -98,24 +94,6 @@ Resources:
           - !Ref SubnetPrivate2
       RoleArn: !GetAtt serviceRole.Arn
       Version: !Ref KubernetesVersion
-      KubernetesApiAccess:
-        Users:
-          - Arn: !Sub "arn:aws:iam::${AWS::AccountId}:user/${Username}"
-            Username: !Sub "arn:aws:iam::${AWS::AccountId}:user/${Username}"
-            Groups: [ "system:masters" ]
-        Roles:
-          - Arn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CS-Okta-Full-Admins-Write"
-            Username: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CS-Okta-Full-Admins-Write"
-            Groups: [ 'system:masters' ]
-          - Arn: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${BastionRole}"
-            Username: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${BastionRole}"
-            Groups: [ 'system:masters' ]
-          - Arn: !Ref EKSCodeBuildServiceRoleArn
-            Username: EKSCodeDeploy
-            Groups: [ 'system:masters' ]
-          - Arn: !Ref EKSQSExtentionRoleArn
-            Username: EKSK8sExtension
-            Groups: [ 'system:masters' ]
 
   ClusterOIDCProvider:
     Type: AWS::IAM::OIDCProvider
@@ -130,7 +108,7 @@ Resources:
         - sts.amazonaws.com
       ThumbprintList:
         - 9e99a48a9960b14926bb7f3b02e22da2b0ab7280
-      Url: !GetAtt Cluster.OIDCIssuerURL
+      Url: !GetAtt Cluster.OpenIdConnectIssuerUrl
 
   ControlPlaneSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -333,6 +311,37 @@ Resources:
                   pass
                   cfnresponse.send(event, context, status, {}, None)
 
+  ClusterNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-name
+      Type: String
+      Value: !Ref Cluster
+      Description: SSM Parameter for EKS Cluster Name.
+  
+  ClusterNameArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-arn
+      Type: String
+      Value: !GetAtt Cluster.Arn
+      Description: SSM Parameter for EKS Cluster ARN.
+  
+  ClusterEndpointParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-endpoint
+      Type: String
+      Value: !GetAtt Cluster.Endpoint
+      Description: SSM Parameter for EKS Endpoint.
+
+  ClusterCaDataParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: cnap-eks-ca-data
+      Type: String
+      Value: !GetAtt Cluster.CertificateAuthorityData
+      Description: SSM Parameter for EKS CA Data.
 
 Outputs:
   EksArn:
@@ -356,7 +365,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}::EKSName"
   OIDCIssuerURLWithoutProtocol:
-    Value: !Join [ '', !Split [ 'https://', !GetAtt Cluster.OIDCIssuerURL ] ]
+    Value: !Join [ '', !Split [ 'https://', !GetAtt Cluster.OpenIdConnectIssuerUrl ] ]
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}::OIDCIssuerURLWithoutProtocol"
