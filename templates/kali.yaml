@@ -37,12 +37,10 @@ Parameters:
   LatestKaliAMI:
     Type: AWS::EC2::Image::Id
     #    us-east-2 :ami-00f2e79091d9064be
-    #    Default: ami-00f2e79091d9064be
-    #    us-west-2: ami-03748e24fab766cfc
-    #    BYOA: ami-00a13348091ba2a87
+    #    us-west-2: ami-04c107ffa12bd5ac2
     #    us-east-2: ami-070832ced46240eb0
-    #    Default: ami-07a53017d32cd4da0
-    Default: ami-070832ced46240eb0
+    #    BYOA: ami-00a13348091ba2a87
+    Default: ami-07a53017d32cd4da0
 
 Conditions:
   PermissionsBoundary: !Not [ !Equals [ !Ref PermissionsBoundary, '' ] ]
