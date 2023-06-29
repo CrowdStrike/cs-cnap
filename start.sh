@@ -12,6 +12,11 @@ env_up(){
    echo "export STACK_NAME=$STACK_NAME" >> /home/ec2-user/.bashrc
    echo "export AWS_REGION=$AWS_REGION" >> /home/ec2-user/.bashrc
 
+   mv /home/ec2-user/cs-cnap/check.sh /usr/local/bin/check
+   chmod +x /usr/local/bin/check
+   mv /home/ec2-user/cs-cnap/configure.sh /usr/local/bin/configure
+   chmod +x /usr/local/bin/configure
+
    echo -e "$LB\n"
    echo -e "Welcome to CNAP$NC"
    echo -e "$LB\n"
