@@ -5,7 +5,7 @@ LB="\033[1;34m"
 env_up(){
    export ENV_HASH=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
    export S3_BUCKET=cnap-${ENV_HASH}
-   export AWS_REGION='us-east-2'
+   export AWS_REGION='us-west-2'
    export S3_PREFIX='templates'
    export STACK_NAME=cnap-${ENV_HASH}
    export TEMPLATE_NAME='entry.yaml'
