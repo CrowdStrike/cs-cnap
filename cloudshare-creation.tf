@@ -155,6 +155,10 @@ cd /home/ec2-user
 git clone https://github.com/CrowdStrike/cs-cnap.git
 mv cs-cnap/start.sh /usr/local/bin/start
 chmod +x /usr/local/bin/start
+mv cs-cnap/check.sh /usr/local/bin/check
+chmod +x /usr/local/bin/check
+mv cs-cnap/configure.sh /usr/local/bin/configure
+chmod +x /usr/local/bin/configure
 cd cs-cnap/code/
 zip code -r *
 cp code.zip ../templates/

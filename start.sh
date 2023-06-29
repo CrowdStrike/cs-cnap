@@ -54,7 +54,7 @@ env_up(){
    --disable-rollback \
    --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
    --parameters \
-   ParameterKey=S3_BUCKET,ParameterValue=${S3_BUCKET} \
+   ParameterKey=S3Bucket,ParameterValue=${S3_BUCKET} \
    ParameterKey=KeyPairName,ParameterValue=${KEY_NAME} \
    ParameterKey=FalconClientID,ParameterValue=$CLIENT_ID \
    ParameterKey=FalconClientSecret,ParameterValue=$CLIENT_SECRET \
@@ -62,7 +62,7 @@ env_up(){
    ParameterKey=FalconCID,ParameterValue=$CS_CID
 
     echo -e "\nThe Cloudformation stack will take 20-30 minutes to complete.$NC"
-    echo -e "\nCheck the status at any time with the command \ncheck"
-    echo -e "\nOnce complete, configure your environment with the command \nconfigure\n"
+    echo -e "\nCheck the status at any time with the command \n\ncheck"
+    echo -e "\nOnce complete, configure your environment with the command \n\nconfigure\n"
 }
 env_up
