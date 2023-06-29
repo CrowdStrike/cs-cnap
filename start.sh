@@ -12,10 +12,10 @@ env_up(){
    echo "export STACK_NAME=$STACK_NAME" >> /home/ec2-user/.bashrc
    echo "export AWS_REGION=$AWS_REGION" >> /home/ec2-user/.bashrc
 
-   mv /home/ec2-user/cs-cnap/check.sh /usr/local/bin/check
-   chmod +x /usr/local/bin/check
-   mv /home/ec2-user/cs-cnap/configure.sh /usr/local/bin/configure
-   chmod +x /usr/local/bin/configure
+   sudo mv /home/ec2-user/cs-cnap/check.sh /usr/local/bin/check
+   sudo chmod +x /usr/local/bin/check
+   sudo mv /home/ec2-user/cs-cnap/configure.sh /usr/local/bin/configure
+   sudo chmod +x /usr/local/bin/configure
 
    echo -e "$LB\n"
    echo -e "Welcome to CNAP$NC"
@@ -46,9 +46,6 @@ env_up(){
 
    aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
    
-   cd /home/ec2-user/cs-cnap/code/
-   zip code -r *
-   cp code.zip /home/ec2-user/cs-cnap/templates/
    cd /home/ec2-user/cs-cnap/templates
    aws s3 cp . s3://${S3_BUCKET} --recursive 
    echo -e "$LB\n"
