@@ -3,12 +3,12 @@ RD="\033[0;31m"
 NC="\033[0;0m"
 LB="\033[1;34m"
 env_up(){
-   EnvHash=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
-   S3Bucket=cnap-${EnvHash}
-   AWS_REGION='us-east-2'
-   S3Prefix='templates'
-   StackName='cwp-demo-stack'
-   TemplateName='entry.yaml'
+   export ENV_HASH=$(LC_ALL=C tr -dc a-z0-9 </dev/urandom | head -c 6)
+   export S3_BUCKET=cnap-${ENV_HASH}
+   export AWS_REGION='us-east-2'
+   export S3_PREFIX='templates'
+   export STACK_NAME=cnap-${ENV_HASH}
+   export TEMPLATE_NAME='entry.yaml'
 
    echo -e "$LB\n"
    echo -e "Welcome to CNAP$NC"
@@ -35,33 +35,34 @@ env_up(){
    CS_CLOUD=${CS_CLOUD:-us-1}
    echo -e "Enter an existing key-pair in us-west-2 for connecting to EC2 instances. You can create one at https://us-west-2.console.aws.amazon.com/ec2#KeyPairs:"
    read -p "Enter your EC2 key-pair name [cs-key]: " KeyPairName
-   KeyPairName=${KeyPairName:-cs-key}
+   KEY_NAME=${KEY_NAME:-cs-key}
 
-   aws s3api create-bucket --bucket $S3Bucket --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
+   aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
    
    cd /home/ec2-user/cs-cnap/code/
    zip code -r *
    cp code.zip /home/ec2-user/cs-cnap/templates/
    cd /home/ec2-user/cs-cnap/templates
-   aws s3 cp . s3://${S3Bucket} --recursive 
+   aws s3 cp . s3://${S3_BUCKET} --recursive 
    echo -e "$LB\n"
    echo -e "Standing up environment...$NC"
 
    aws cloudformation create-stack \
-   --stack-name $StackName \
-   --template-url https://${S3Bucket}.s3.amazonaws.com/${TemplateName} \
+   --stack-name $STACK_NAME \
+   --template-url https://${S3_BUCKET}.s3.amazonaws.com/${TEMPLATE_NAME} \
    --region $AWS_REGION \
    --disable-rollback \
    --capabilities CAPABILITY_NAMED_IAM CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
    --parameters \
-   ParameterKey=S3Bucket,ParameterValue=${S3Bucket} \
-   ParameterKey=KeyPairName,ParameterValue=${KeyPairName} \
+   ParameterKey=S3_BUCKET,ParameterValue=${S3_BUCKET} \
+   ParameterKey=KeyPairName,ParameterValue=${KEY_NAME} \
    ParameterKey=FalconClientID,ParameterValue=$CLIENT_ID \
    ParameterKey=FalconClientSecret,ParameterValue=$CLIENT_SECRET \
    ParameterKey=CrowdStrikeCloud,ParameterValue=$CS_CLOUD \
    ParameterKey=FalconCID,ParameterValue=$CS_CID
 
-    echo -e "The Cloudformation stack will take 20-30 minutes to complete.$NC"
-    echo -e "\n\nCheck the status at any time with the command \n\naws cloudformation describe-stacks --stack-name $StackName --region $AWS_REGION$NC\n\n"
+    echo -e "\nThe Cloudformation stack will take 20-30 minutes to complete.$NC"
+    echo -e "\nCheck the status at any time with the command \ncheck"
+    echo -e "\nOnce complete, configure your environment with the command \nconfigure\n"
 }
 env_up

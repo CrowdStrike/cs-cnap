@@ -1,20 +1,14 @@
 #!/bin/bash
 
-STATUS=$(aws cloudformation describe-stacks --stack-name cwp-demo-stack --region us-east-2 --query 'Stacks[].StackStatus')
-STATUS_REASON=$(aws cloudformation describe-stacks --stack-name cwp-demo-stack --region us-east-2 --query 'Stacks[].StackStatusReason')
+STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $AWS_REGION --query 'Stacks[].StackStatus')
+STATUS_REASON=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $AWS_REGION --query 'Stacks[].StackStatusReason')
 
 if [[ $STATUS == *"CREATE_COMPLETE"* ]]; then
-  echo ""
-  echo "Stack deployment complete!  Please run configure"
-  echo ""
+  echo -e "\nStack deployment complete!  Please run"
+  echo -e "\nconfigure\n"
 elif  [[ $STATUS == *"CREATE_FAILED"* ]]; then
-  echo ""
-  echo $STATUS
-  echo ""
-  echo $STATUS_REASON
-  echo ""
+  echo -e "\n$STATUS"
+  echo -e "\n $STATUS_REASON"
 else
-  echo ""
-  echo $STATUS
-  echo ""
+  echo -e "\n$STATUS\n"
 fi
