@@ -9,6 +9,8 @@ env_up(){
    export S3_PREFIX='templates'
    export STACK_NAME=cnap-${ENV_HASH}
    export TEMPLATE_NAME='entry.yaml'
+   echo "export STACK_NAME=$STACK_NAME" >> /home/ec2-user/.bashrc
+   echo "export AWS_REGION=$AWS_REGION" >> /home/ec2-user/.bashrc
 
    echo -e "$LB\n"
    echo -e "Welcome to CNAP$NC"

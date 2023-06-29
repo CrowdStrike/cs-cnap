@@ -1,4 +1,5 @@
 #!/bin/bash
+source .bashrc
 
 STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $AWS_REGION --query 'Stacks[].StackStatus')
 STATUS_REASON=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $AWS_REGION --query 'Stacks[].StackStatusReason')
