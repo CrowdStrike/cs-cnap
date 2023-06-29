@@ -36,7 +36,7 @@ env_up(){
    read -p "Enter your Falcon Cloud [us-1]: " CS_CLOUD
    CS_CLOUD=${CS_CLOUD:-us-1}
    echo -e "Enter an existing key-pair in us-west-2 for connecting to EC2 instances. You can create one at https://us-west-2.console.aws.amazon.com/ec2#KeyPairs:"
-   read -p "Enter your EC2 key-pair name [cs-key]: " KeyPairName
+   read -p "Enter your EC2 key-pair name [cs-key]: " KEY_NAME
    KEY_NAME=${KEY_NAME:-cs-key}
 
    aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
