@@ -1,14 +1,16 @@
 #!/bin/bash
 function setup_environment_variables() {
+    #TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    #REGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/placement/availability-zone/)
     REGION=$(curl -sq http://169.254.169.254/latest/meta-data/placement/availability-zone/)
     REGION=${REGION: :-1}
     ACCOUNT_ID=$(aws sts get-caller-identity | jq -r .Account)
-    CLUSTER_CA_DATA=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-ca-data --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
-    CLUSTER_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
-    CLUSTER_NAME=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-name --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
-    CLUSTER_ENDPOINT=$(aws ssm get-parameter --region us-east-2 --name cnap-eks-endpoint --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
-    LB_ROLE_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-lb-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
-    CP_ROLE_ARN=$(aws ssm get-parameter --region us-east-2 --name cnap-cp-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_CA_DATA=$(aws ssm get-parameter --region ca-central-1 --name cnap-eks-ca-data --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_ARN=$(aws ssm get-parameter --region ca-central-1 --name cnap-eks-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_NAME=$(aws ssm get-parameter --region ca-central-1 --name cnap-eks-name --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CLUSTER_ENDPOINT=$(aws ssm get-parameter --region ca-central-1 --name cnap-eks-endpoint --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    LB_ROLE_ARN=$(aws ssm get-parameter --region ca-central-1 --name cnap-lb-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
+    CP_ROLE_ARN=$(aws ssm get-parameter --region ca-central-1 --name cnap-cp-role-arn --query 'Parameter.Value' | sed 's/"//' | sed 's/"//')
 }
 
 function install_kubernetes_client_tools() {
