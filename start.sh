@@ -12,15 +12,13 @@ env_up(){
    echo "export STACK_NAME=$STACK_NAME" >> /home/ec2-user/.bashrc
    echo "export AWS_REGION=$AWS_REGION" >> /home/ec2-user/.bashrc
 
-   sudo mv /home/ec2-user/cs-cnap/check.sh /usr/local/bin/check
-   sudo chmod +x /usr/local/bin/check
-   sudo mv /home/ec2-user/cs-cnap/configure.sh /usr/local/bin/configure
-   sudo chmod +x /usr/local/bin/configure
+   [ -f "/home/ec2-user/cs-cnap/check.sh" ] && sudo mv /home/ec2-user/cs-cnap/check.sh /usr/local/bin/check && sudo chmod +x /usr/local/bin/check
+   [ -f "/home/ec2-user/cs-cnap/configure.sh" ] && sudo mv /home/ec2-user/cs-cnap/configure.sh /usr/local/bin/configure && sudo chmod +x /usr/local/bin/configure
 
    echo -e "$LB\n"
    echo -e "Welcome to CNAP$NC"
    echo -e "$LB\n"
-   echo -e "You will asked to provide a Falcon API Key Client ID and Secret." 
+   echo -e "You will asked to provide a Falcon API Key Client ID and Secret."
    echo -e "You can create one at https://falcon.crowdstrike.com/support/api-clients-and-keys"
    echo -e "$LB\n"
    echo -e "The ev Days Workshop environment requires the following API Scope permissions:"
@@ -45,9 +43,9 @@ env_up(){
    KEY_NAME=${KEY_NAME:-cs-key}
 
    aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION
-   
-   cd /home/ec2-user/cs-cnap/templates
-   aws s3 cp . s3://${S3_BUCKET} --recursive 
+
+   cd /home/ec2-user/cs-cnap/templates || exit
+   aws s3 cp . s3://${S3_BUCKET} --recursive
    echo -e "$LB\n"
    echo -e "Standing up environment...$NC"
 
